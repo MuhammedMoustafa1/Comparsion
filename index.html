@@ -69,8 +69,8 @@
         >
           <fieldset class="field-group">
             <legend class="field-group__legend">الطبقات الأولى</legend>
-            <div class="field-row">
-              <div class="field">
+            <div class="field-row field-row--single">
+              <div class="field field--full">
                 <label class="field__label" for="multi-layer1">اختيار الطبقة</label>
                 <div class="select-wrap">
                   <select id="multi-layer1" name="layer1" class="select" data-layer-select required>
@@ -80,24 +80,13 @@
                 </div>
                 <span class="field-error" id="error-multi-layer1" role="alert"></span>
               </div>
-              <div class="field">
-                <label class="field__label" for="multi-date1">التاريخ</label>
-                <div class="select-wrap">
-                  <select id="multi-date1" name="date1" class="select" data-date-select disabled required>
-                    <option value="">— اختر تاريخاً —</option>
-                  </select>
-                  <span class="select-arrow" aria-hidden="true"></span>
-                  <span class="select-loading" aria-hidden="true"></span>
-                </div>
-                <span class="field-error" id="error-multi-date1" role="alert"></span>
-              </div>
             </div>
           </fieldset>
 
           <fieldset class="field-group">
             <legend class="field-group__legend">الطبقات الثانية</legend>
-            <div class="field-row">
-              <div class="field">
+            <div class="field-row field-row--single">
+              <div class="field field--full">
                 <label class="field__label" for="multi-layer2">اختيار الطبقة</label>
                 <div class="select-wrap">
                   <select id="multi-layer2" name="layer2" class="select" data-layer-select required>
@@ -106,17 +95,6 @@
                   <span class="select-arrow" aria-hidden="true"></span>
                 </div>
                 <span class="field-error" id="error-multi-layer2" role="alert"></span>
-              </div>
-              <div class="field">
-                <label class="field__label" for="multi-date2">التاريخ</label>
-                <div class="select-wrap">
-                  <select id="multi-date2" name="date2" class="select" data-date-select disabled required>
-                    <option value="">— اختر تاريخاً —</option>
-                  </select>
-                  <span class="select-arrow" aria-hidden="true"></span>
-                  <span class="select-loading" aria-hidden="true"></span>
-                </div>
-                <span class="field-error" id="error-multi-date2" role="alert"></span>
               </div>
             </div>
           </fieldset>
@@ -158,12 +136,25 @@
               <div class="field field--full">
                 <label class="field__label" for="same-layer">اختيار الطبقة</label>
                 <div class="select-wrap">
-                  <select id="same-layer" name="layer" class="select" data-layer-select required>
+                  <select id="same-layer" name="layer" class="select" data-same-layer-select required>
                     <option value="">— اختر طبقة —</option>
                   </select>
                   <span class="select-arrow" aria-hidden="true"></span>
                 </div>
                 <span class="field-error" id="error-same-layer" role="alert"></span>
+              </div>
+            </div>
+            <div class="field-row field-row--single field-row--criteria" id="same-criteria-row" hidden>
+              <div class="field field--full">
+                <label class="field__label" for="same-browse-criteria">معيار الاستعراض</label>
+                <div class="select-wrap">
+                  <select id="same-browse-criteria" name="browseCriteria" class="select" data-browse-criteria-select disabled required>
+                    <option value="">— اختر معياراً —</option>
+                  </select>
+                  <span class="select-arrow" aria-hidden="true"></span>
+                  <span class="select-loading" aria-hidden="true"></span>
+                </div>
+                <span class="field-error" id="error-same-browse-criteria" role="alert"></span>
               </div>
             </div>
             <div class="field-row">

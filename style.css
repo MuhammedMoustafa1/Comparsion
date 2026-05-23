@@ -259,6 +259,21 @@ body {
   margin-bottom: 0.875rem;
 }
 
+/* Same-layer: browse criteria row reveal */
+.field-row--criteria {
+  margin-bottom: 0.875rem;
+  opacity: 0;
+  transform: translateY(-6px);
+  transition:
+    opacity var(--transition-normal),
+    transform var(--transition-normal);
+}
+
+.field-row--criteria.is-visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
 .field--full {
   grid-column: 1 / -1;
 }

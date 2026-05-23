@@ -4,12 +4,24 @@
  */
 
 // ============================================
-// Mock data
+// Mock data — multi-layer mode (layer keys only)
 // ============================================
-const layersData = {
-  hotels: ["2024-01-01", "2024-03-01", "2024-06-01"],
-  roads: ["2024-02-01", "2024-05-01"],
-  buildings: ["2024-01-15", "2024-04-20"],
+const multiLayerKeys = ["hotels", "roads", "buildings"];
+
+/** Extended data for "نفس الطبقة" mode only */
+const sameLayerData = {
+  hotels: {
+    browseCriteria: ["حسب المنطقة", "حسب التصنيف", "حسب الحالة"],
+    dates: ["2024-01-01", "2024-03-01", "2024-06-01"],
+  },
+  roads: {
+    browseCriteria: ["حسب النوع", "حسب الكثافة"],
+    dates: ["2024-02-01", "2024-05-01"],
+  },
+  buildings: {
+    browseCriteria: ["حسب الارتفاع", "حسب الاستخدام"],
+    dates: ["2024-01-15", "2024-04-20"],
+  },
 };
 
 /** Arabic display names for layers */
@@ -22,13 +34,15 @@ const layerLabels = {
 /** Simulated network delay when loading dates (ms) */
 const DATE_LOAD_DELAY = 450;
 
+/** Simulated delay when loading browse criteria (ms) */
+const CRITERIA_LOAD_DELAY = 350;
+
 // ============================================
 // Validation messages (Arabic)
 // ============================================
 const messages = {
   required: "هذا الحقل مطلوب",
   sameDate: "يجب اختيار تاريخين مختلفين",
-  selectLayerFirst: "اختر طبقة أولاً",
 };
 
 // ============================================
@@ -67,19 +81,6 @@ function formatDateArabic(isoDate) {
 }
 
 /**
- * Simulate async date fetch for a layer
- * @param {string} layerKey
- * @returns {Promise<string[]>}
- */
-function fetchDatesForLayer(layerKey) {
-  return new Promise((resolve) => {
-    setTimeout(() => {
-      resolve(layersData[layerKey] ? [...layersData[layerKey]] : []);
-    }, DATE_LOAD_DELAY);
-  });
-}
-
-/**
  * Populate a select with placeholder + options
  * @param {HTMLSelectElement} select
  * @param {Array<{value: string, label: string}>} options
@@ -104,7 +105,7 @@ function fillSelect(select, options, placeholder = "— اختر —") {
  * Initialize all layer dropdowns from layersData
  */
 function initLayerSelects() {
-  const layerOptions = Object.keys(layersData).map((key) => ({
+  const layerOptions = multiLayerKeys.map((key) => ({
     value: key,
     label: layerLabels[key] || key,
   }));
@@ -112,6 +113,15 @@ function initLayerSelects() {
   document.querySelectorAll("[data-layer-select]").forEach((select) => {
     fillSelect(select, layerOptions, "— اختر طبقة —");
   });
+
+  const sameLayerOptions = Object.keys(sameLayerData).map((key) => ({
+    value: key,
+    label: layerLabels[key] || key,
+  }));
+  const sameLayerSelect = document.getElementById("same-layer");
+  if (sameLayerSelect) {
+    fillSelect(sameLayerSelect, sameLayerOptions, "— اختر طبقة —");
+  }
 }
 
 /**
@@ -127,18 +137,75 @@ function resetDateSelect(dateSelect) {
 }
 
 /**
- * Load dates into a date select with loading UI
+ * Simulate async browse-criteria fetch (same-layer mode)
+ * @param {string} layerKey
+ * @returns {Promise<string[]>}
+ */
+function fetchBrowseCriteriaForLayer(layerKey) {
+  return new Promise((resolve) => {
+    setTimeout(() => {
+      const entry = sameLayerData[layerKey];
+      resolve(entry?.browseCriteria ? [...entry.browseCriteria] : []);
+    }, CRITERIA_LOAD_DELAY);
+  });
+}
+
+/**
+ * Get dates for same-layer mode from sameLayerData
+ * @param {string} layerKey
+ * @returns {Promise<string[]>}
+ */
+function fetchSameLayerDates(layerKey) {
+  return new Promise((resolve) => {
+    setTimeout(() => {
+      const entry = sameLayerData[layerKey];
+      resolve(entry?.dates ? [...entry.dates] : []);
+    }, DATE_LOAD_DELAY);
+  });
+}
+
+/**
+ * Reset browse-criteria select (same-layer mode)
+ * @param {HTMLSelectElement} criteriaSelect
+ */
+function resetBrowseCriteriaSelect(criteriaSelect) {
+  const wrap = criteriaSelect.closest(".select-wrap");
+  fillSelect(criteriaSelect, [], "— اختر معياراً —");
+  criteriaSelect.value = "";
+  criteriaSelect.disabled = true;
+  if (wrap) wrap.classList.remove("is-loading");
+}
+
+/**
+ * Load browse criteria into select with loading UI
+ * @param {HTMLSelectElement} criteriaSelect
+ * @param {string} layerKey
+ */
+async function loadBrowseCriteriaIntoSelect(criteriaSelect, layerKey) {
+  const wrap = criteriaSelect.closest(".select-wrap");
+  criteriaSelect.disabled = true;
+  if (wrap) wrap.classList.add("is-loading");
+
+  const criteria = await fetchBrowseCriteriaForLayer(layerKey);
+  const options = criteria.map((c) => ({ value: c, label: c }));
+
+  fillSelect(criteriaSelect, options, "— اختر معياراً —");
+  criteriaSelect.disabled = false;
+  if (wrap) wrap.classList.remove("is-loading");
+}
+
+/**
+ * Load dates for same-layer mode (requires layer + criteria selected)
  * @param {HTMLSelectElement} dateSelect
  * @param {string} layerKey
- * @param {string[]} [excludeValues] - option values to omit (same-layer mode)
+ * @param {string[]} [excludeValues]
  */
-async function loadDatesIntoSelect(dateSelect, layerKey, excludeValues = []) {
+async function loadSameLayerDatesIntoSelect(dateSelect, layerKey, excludeValues = []) {
   const wrap = dateSelect.closest(".select-wrap");
   dateSelect.disabled = true;
   if (wrap) wrap.classList.add("is-loading");
 
-  const dates = await fetchDatesForLayer(layerKey);
-
+  const dates = await fetchSameLayerDates(layerKey);
   const options = dates
     .filter((d) => !excludeValues.includes(d))
     .map((d) => ({ value: d, label: formatDateArabic(d) }));
@@ -146,6 +213,23 @@ async function loadDatesIntoSelect(dateSelect, layerKey, excludeValues = []) {
   fillSelect(dateSelect, options, "— اختر تاريخاً —");
   dateSelect.disabled = false;
   if (wrap) wrap.classList.remove("is-loading");
+}
+
+/**
+ * Show/hide browse-criteria row with reveal animation
+ * @param {boolean} show
+ */
+function toggleCriteriaRow(show) {
+  const row = document.getElementById("same-criteria-row");
+  if (!row) return;
+
+  if (show) {
+    row.hidden = false;
+    requestAnimationFrame(() => row.classList.add("is-visible"));
+  } else {
+    row.classList.remove("is-visible");
+    row.hidden = true;
+  }
 }
 
 /**
@@ -206,17 +290,13 @@ function clearFormErrors(form) {
  */
 function validateMultiForm() {
   const layer1 = document.getElementById("multi-layer1").value;
-  const date1 = document.getElementById("multi-date1").value;
   const layer2 = document.getElementById("multi-layer2").value;
-  const date2 = document.getElementById("multi-date2").value;
   const direction = getDirection(formMulti, "multi-direction");
 
   const errors = {};
 
   if (!layer1) errors["error-multi-layer1"] = messages.required;
-  if (!date1) errors["error-multi-date1"] = messages.required;
   if (!layer2) errors["error-multi-layer2"] = messages.required;
-  if (!date2) errors["error-multi-date2"] = messages.required;
 
   const valid = Object.keys(errors).length === 0 && !!direction;
 
@@ -227,9 +307,7 @@ function validateMultiForm() {
       ? {
           mode: "multi",
           layer1,
-          layer1Date: date1,
           layer2,
-          layer2Date: date2,
           direction,
         }
       : undefined,
@@ -242,6 +320,7 @@ function validateMultiForm() {
  */
 function validateSameForm() {
   const layer = document.getElementById("same-layer").value;
+  const browseCriteria = document.getElementById("same-browse-criteria").value;
   const firstDate = document.getElementById("same-date1").value;
   const secondDate = document.getElementById("same-date2").value;
   const direction = getDirection(formSame, "same-direction");
@@ -249,6 +328,7 @@ function validateSameForm() {
   const errors = {};
 
   if (!layer) errors["error-same-layer"] = messages.required;
+  if (!browseCriteria) errors["error-same-browse-criteria"] = messages.required;
   if (!firstDate) errors["error-same-date1"] = messages.required;
   if (!secondDate) errors["error-same-date2"] = messages.required;
 
@@ -265,6 +345,7 @@ function validateSameForm() {
       ? {
           mode: "same",
           layer,
+          browseCriteria,
           firstDate,
           secondDate,
           direction,
@@ -341,43 +422,47 @@ function switchMode(mode) {
 }
 
 // ============================================
-// Event handlers — Multi mode
-// ============================================
-
-async function onMultiLayer1Change() {
-  const layer = document.getElementById("multi-layer1").value;
-  const dateSelect = document.getElementById("multi-date1");
-  resetDateSelect(dateSelect);
-  if (layer) await loadDatesIntoSelect(dateSelect, layer);
-  runValidation(true);
-}
-
-async function onMultiLayer2Change() {
-  const layer = document.getElementById("multi-layer2").value;
-  const dateSelect = document.getElementById("multi-date2");
-  resetDateSelect(dateSelect);
-  if (layer) await loadDatesIntoSelect(dateSelect, layer);
-  runValidation(true);
-}
-
-// ============================================
 // Event handlers — Same layer mode
 // ============================================
 
 async function onSameLayerChange() {
   const layer = document.getElementById("same-layer").value;
+  const criteriaSelect = document.getElementById("same-browse-criteria");
+  const date1 = document.getElementById("same-date1");
+  const date2 = document.getElementById("same-date2");
+
+  resetBrowseCriteriaSelect(criteriaSelect);
+  resetDateSelect(date1);
+  resetDateSelect(date2);
+  toggleCriteriaRow(false);
+
+  if (layer) {
+    toggleCriteriaRow(true);
+    await loadBrowseCriteriaIntoSelect(criteriaSelect, layer);
+  }
+
+  runValidation(true);
+}
+
+/**
+ * After browse criteria selected — enable and load dates
+ */
+async function onSameBrowseCriteriaChange() {
+  const layer = document.getElementById("same-layer").value;
+  const criteria = document.getElementById("same-browse-criteria").value;
   const date1 = document.getElementById("same-date1");
   const date2 = document.getElementById("same-date2");
 
   resetDateSelect(date1);
   resetDateSelect(date2);
 
-  if (layer) {
+  if (layer && criteria) {
     await Promise.all([
-      loadDatesIntoSelect(date1, layer),
-      loadDatesIntoSelect(date2, layer),
+      loadSameLayerDatesIntoSelect(date1, layer),
+      loadSameLayerDatesIntoSelect(date2, layer),
     ]);
   }
+
   runValidation(true);
 }
 
@@ -386,13 +471,14 @@ async function onSameLayerChange() {
  */
 async function onSameDate1Change() {
   const layer = document.getElementById("same-layer").value;
+  const criteria = document.getElementById("same-browse-criteria").value;
   const date1 = document.getElementById("same-date1").value;
   const date2 = document.getElementById("same-date2");
 
-  if (!layer) return;
+  if (!layer || !criteria) return;
 
   const prevDate2 = date2.value;
-  await loadDatesIntoSelect(date2, layer, date1 ? [date1] : []);
+  await loadSameLayerDatesIntoSelect(date2, layer, date1 ? [date1] : []);
 
   // Restore date2 if still valid and different
   if (prevDate2 && prevDate2 !== date1) {
@@ -408,13 +494,14 @@ async function onSameDate1Change() {
  */
 async function onSameDate2Change() {
   const layer = document.getElementById("same-layer").value;
+  const criteria = document.getElementById("same-browse-criteria").value;
   const date2 = document.getElementById("same-date2").value;
   const date1 = document.getElementById("same-date1");
 
-  if (!layer) return;
+  if (!layer || !criteria) return;
 
   const prevDate1 = date1.value;
-  await loadDatesIntoSelect(date1, layer, date2 ? [date2] : []);
+  await loadSameLayerDatesIntoSelect(date1, layer, date2 ? [date2] : []);
 
   if (prevDate1 && prevDate1 !== date2) {
     const opt = [...date1.options].find((o) => o.value === prevDate1);
@@ -442,6 +529,12 @@ function resetActiveForm() {
   form.reset();
 
   form.querySelectorAll("[data-date-select]").forEach(resetDateSelect);
+
+  if (activeMode === "same") {
+    const criteriaSelect = document.getElementById("same-browse-criteria");
+    if (criteriaSelect) resetBrowseCriteriaSelect(criteriaSelect);
+    toggleCriteriaRow(false);
+  }
 
   // Restore default direction
   const dirName = activeMode === "multi" ? "multi-direction" : "same-direction";
@@ -493,16 +586,15 @@ function bindEvents() {
     tab.addEventListener("keydown", onTabKeydown);
   });
 
-  document.getElementById("multi-layer1").addEventListener("change", onMultiLayer1Change);
-  document.getElementById("multi-layer2").addEventListener("change", onMultiLayer2Change);
-  document.getElementById("multi-date1").addEventListener("change", () => runValidation(true));
-  document.getElementById("multi-date2").addEventListener("change", () => runValidation(true));
+  document.getElementById("multi-layer1").addEventListener("change", () => runValidation(true));
+  document.getElementById("multi-layer2").addEventListener("change", () => runValidation(true));
 
   formMulti.querySelectorAll('input[name="multi-direction"]').forEach((r) => {
     r.addEventListener("change", () => runValidation(true));
   });
 
   document.getElementById("same-layer").addEventListener("change", onSameLayerChange);
+  document.getElementById("same-browse-criteria").addEventListener("change", onSameBrowseCriteriaChange);
   document.getElementById("same-date1").addEventListener("change", onSameDate1Change);
   document.getElementById("same-date2").addEventListener("change", onSameDate2Change);
 
