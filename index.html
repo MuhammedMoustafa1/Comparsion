@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>مقارنة الطبقات — GEO Map</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="page-backdrop" aria-hidden="true"></div>
+
+  <main class="app-shell">
+    <section
+      class="comparison-panel"
+      role="dialog"
+      aria-labelledby="panel-title"
+      aria-modal="true"
+    >
+      <header class="panel-header">
+        <div class="panel-header__text">
+          <h1 id="panel-title" class="panel-title">مقارنة الطبقات</h1>
+          <p class="panel-subtitle">اختر طريقة المقارنة وحدد الطبقات والتواريخ</p>
+        </div>
+        <button type="button" class="panel-close" aria-label="إغلاق" title="إغلاق">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <path d="M18 6L6 18M6 6l12 12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+          </svg>
+        </button>
+      </header>
+
+      <!-- Mode tabs -->
+      <div class="mode-tabs" role="tablist" aria-label="أنماط المقارنة">
+        <button
+          type="button"
+          class="mode-tab is-active"
+          role="tab"
+          id="tab-multi"
+          aria-selected="true"
+          aria-controls="form-multi"
+          data-mode="multi"
+        >
+          عدة طبقات
+        </button>
+        <button
+          type="button"
+          class="mode-tab"
+          role="tab"
+          id="tab-same"
+          aria-selected="false"
+          aria-controls="form-same"
+          data-mode="same"
+        >
+          نفس الطبقة
+        </button>
+      </div>
+
+      <div class="panel-body">
+        <!-- MODE 1: عدة طبقات -->
+        <form
+          id="form-multi"
+          class="comparison-form is-visible"
+          data-mode="multi"
+          role="tabpanel"
+          aria-labelledby="tab-multi"
+          novalidate
+        >
+          <fieldset class="field-group">
+            <legend class="field-group__legend">الطبقات الأولى</legend>
+            <div class="field-row">
+              <div class="field">
+                <label class="field__label" for="multi-layer1">اختيار الطبقة</label>
+                <div class="select-wrap">
+                  <select id="multi-layer1" name="layer1" class="select" data-layer-select required>
+                    <option value="">— اختر طبقة —</option>
+                  </select>
+                  <span class="select-arrow" aria-hidden="true"></span>
+                </div>
+                <span class="field-error" id="error-multi-layer1" role="alert"></span>
+              </div>
+              <div class="field">
+                <label class="field__label" for="multi-date1">التاريخ</label>
+                <div class="select-wrap">
+                  <select id="multi-date1" name="date1" class="select" data-date-select disabled required>
+                    <option value="">— اختر تاريخاً —</option>
+                  </select>
+                  <span class="select-arrow" aria-hidden="true"></span>
+                  <span class="select-loading" aria-hidden="true"></span>
+                </div>
+                <span class="field-error" id="error-multi-date1" role="alert"></span>
+              </div>
+            </div>
+          </fieldset>
+
+          <fieldset class="field-group">
+            <legend class="field-group__legend">الطبقات الثانية</legend>
+            <div class="field-row">
+              <div class="field">
+                <label class="field__label" for="multi-layer2">اختيار الطبقة</label>
+                <div class="select-wrap">
+                  <select id="multi-layer2" name="layer2" class="select" data-layer-select required>
+                    <option value="">— اختر طبقة —</option>
+                  </select>
+                  <span class="select-arrow" aria-hidden="true"></span>
+                </div>
+                <span class="field-error" id="error-multi-layer2" role="alert"></span>
+              </div>
+              <div class="field">
+                <label class="field__label" for="multi-date2">التاريخ</label>
+                <div class="select-wrap">
+                  <select id="multi-date2" name="date2" class="select" data-date-select disabled required>
+                    <option value="">— اختر تاريخاً —</option>
+                  </select>
+                  <span class="select-arrow" aria-hidden="true"></span>
+                  <span class="select-loading" aria-hidden="true"></span>
+                </div>
+                <span class="field-error" id="error-multi-date2" role="alert"></span>
+              </div>
+            </div>
+          </fieldset>
+
+          <fieldset class="field-group field-group--inline">
+            <legend class="field-group__legend">الاتجاه</legend>
+            <div class="direction-options" role="radiogroup" aria-label="اتجاه المقارنة">
+              <label class="direction-option">
+                <input type="radio" name="multi-direction" value="vertical" class="direction-option__input" checked />
+                <span class="direction-option__box">
+                  <span class="direction-icon direction-icon--vertical" aria-hidden="true"></span>
+                  <span class="direction-option__label">رأسي</span>
+                </span>
+              </label>
+              <label class="direction-option">
+                <input type="radio" name="multi-direction" value="horizontal" class="direction-option__input" />
+                <span class="direction-option__box">
+                  <span class="direction-icon direction-icon--horizontal" aria-hidden="true"></span>
+                  <span class="direction-option__label">أفقي</span>
+                </span>
+              </label>
+            </div>
+          </fieldset>
+        </form>
+
+        <!-- MODE 2: نفس الطبقة -->
+        <form
+          id="form-same"
+          class="comparison-form"
+          data-mode="same"
+          role="tabpanel"
+          aria-labelledby="tab-same"
+          hidden
+          novalidate
+        >
+          <fieldset class="field-group">
+            <legend class="field-group__legend visually-hidden">اختيار الطبقة والتواريخ</legend>
+            <div class="field-row field-row--single">
+              <div class="field field--full">
+                <label class="field__label" for="same-layer">اختيار الطبقة</label>
+                <div class="select-wrap">
+                  <select id="same-layer" name="layer" class="select" data-layer-select required>
+                    <option value="">— اختر طبقة —</option>
+                  </select>
+                  <span class="select-arrow" aria-hidden="true"></span>
+                </div>
+                <span class="field-error" id="error-same-layer" role="alert"></span>
+              </div>
+            </div>
+            <div class="field-row">
+              <div class="field">
+                <label class="field__label" for="same-date1">التاريخ الأول</label>
+                <div class="select-wrap">
+                  <select id="same-date1" name="firstDate" class="select" data-date-select disabled required>
+                    <option value="">— اختر تاريخاً —</option>
+                  </select>
+                  <span class="select-arrow" aria-hidden="true"></span>
+                  <span class="select-loading" aria-hidden="true"></span>
+                </div>
+                <span class="field-error" id="error-same-date1" role="alert"></span>
+              </div>
+              <div class="field">
+                <label class="field__label" for="same-date2">التاريخ الثاني</label>
+                <div class="select-wrap">
+                  <select id="same-date2" name="secondDate" class="select" data-date-select disabled required>
+                    <option value="">— اختر تاريخاً —</option>
+                  </select>
+                  <span class="select-arrow" aria-hidden="true"></span>
+                  <span class="select-loading" aria-hidden="true"></span>
+                </div>
+                <span class="field-error" id="error-same-date2" role="alert"></span>
+              </div>
+            </div>
+          </fieldset>
+
+          <fieldset class="field-group field-group--inline">
+            <legend class="field-group__legend">الاتجاه</legend>
+            <div class="direction-options" role="radiogroup" aria-label="اتجاه المقارنة">
+              <label class="direction-option">
+                <input type="radio" name="same-direction" value="vertical" class="direction-option__input" checked />
+                <span class="direction-option__box">
+                  <span class="direction-icon direction-icon--vertical" aria-hidden="true"></span>
+                  <span class="direction-option__label">رأسي</span>
+                </span>
+              </label>
+              <label class="direction-option">
+                <input type="radio" name="same-direction" value="horizontal" class="direction-option__input" />
+                <span class="direction-option__box">
+                  <span class="direction-icon direction-icon--horizontal" aria-hidden="true"></span>
+                  <span class="direction-option__label">أفقي</span>
+                </span>
+              </label>
+            </div>
+          </fieldset>
+        </form>
+      </div>
+
+      <footer class="panel-footer">
+        <button type="button" class="btn btn--ghost" id="btn-cancel">إلغاء</button>
+        <button type="button" class="btn btn--primary" id="btn-submit" disabled>
+          عرض ومطابقة البيانات
+        </button>
+      </footer>
+    </section>
+  </main>
+
+  <script src="script.js"></script>
+</body>
+</html>
